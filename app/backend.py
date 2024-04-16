@@ -4,9 +4,10 @@ import pickle
 
 import pandas as pd
 import pandas.testing as pd_testing
-
+import numpy as np
 # ML
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import cohen_kappa_score
 
 # App
 import streamlit as st
@@ -15,7 +16,7 @@ import streamlit as st
 
 
 
-###### Load Data ##############
+############## Load Data ##############
 def load_data():
     """
     Provude the user with the option to upload a csv File.
@@ -27,9 +28,17 @@ def load_data():
         df = pd.read_csv(uploaded_file)
         st.session_state.df = df
         
-        return df
+        
+        # Extract filename
+        filename = uploaded_file.name
+        st.session_state.filename = filename
+
+        return df, filename
+    else:
+         st.error("Please upload file")
+         return None, None
     
-###### Validate input df ##############
+############## Validate input df ##############
 def validate_input(df:pd.DataFrame):
     """
     Validate input data.
@@ -56,7 +65,7 @@ def validate_input(df:pd.DataFrame):
         return "Table validation not passed. Table contains dtypes"
 
 
-###### Normalized Data ##############
+############## Scale Data ##############
 
 def scale_data(df:pd.DataFrame):
     """
@@ -82,7 +91,7 @@ def scale_data(df:pd.DataFrame):
 
 
 
-###### Drop Features ##############
+############## Drop Features ##############
 
 def drop_cols(df:pd.DataFrame):
     """
@@ -103,9 +112,105 @@ def drop_cols(df:pd.DataFrame):
 
 
 
-###### Update Weigts ##############
-def update_w2_value(w1_value):
-            """
-            Update weights for multiple model deployment
-            """
-            return 100 - w1_value
+############## Load ML Models ##############
+
+def ml_model_loader(model_list:list):
+    """
+    The function loads models via a list of model names
+    """
+
+    ml_list = []
+
+    mapping_dict = {"AdaBoost(RF)":"ada_class.pickle",
+               'Logistic Regression':"log_reg.pickle", 
+               'Random Forrest':"random_forest.pickle", 
+               'SVM':"svm.pickle"}
+
+
+    for key, value in mapping_dict.items():
+        if key in model_list:
+
+            # Load Model
+            with open(Path(__file__).parents[1] / "machine_learning/models" / value, "rb") as file:
+                value = pickle.load(file)
+    
+                ml_list.append(value)
+
+    return ml_list
+
+
+############## Run Predictions ##############
+def ml_predictor(df:pd.DataFrame, ml_list:list):
+    
+    if df is None:
+            return ""
+    
+    # Copy of test_set
+    X_test = df.copy()
+    #st.write(X_test)
+
+    # Initiate empty DataFrame to store predictions
+    df_pred = pd.DataFrame()
+
+
+
+
+    # Add predictions to array
+    for i, model in enumerate(ml_list):
+        pred = model.predict(X_test)
+        #st.write(pred)
+
+        # Convert to array to pandas df
+        series_pred = pd.Series(pred, name='model_'+str(i))
+        
+
+        # Add Series to df_pred   
+        df_pred = pd.concat([df_pred, series_pred], axis=1)
+
+    # Get most frequent values: value_counts
+    value_counts_df = df_pred.apply(pd.value_counts, axis=1)
+    #st.write("value_counts_df", df_pred)
+
+    # Get Mode: select first value_count in case of a tie
+    mode_pred = value_counts_df.idxmax(axis=1)
+    mode_pred_first = mode_pred.mask(value_counts_df.duplicated(keep='first'), 
+                                     value_counts_df.idxmax(axis=1))
+
+    #st.write("mode_pred",mode_pred)
+    #st.write("df_pred",df_pred)
+   
+
+    X_test['prediction'] = mode_pred
+    
+
+
+    return X_test, df_pred, df_pred[df_pred.nunique(1).ne(1)]  # https://stackoverflow.com/questions/56061033/compare-multiple-columns-in-a-pandas-dataframe
+
+
+############## Convert df to csv ##############
+# https://docs.streamlit.io/knowledge-base/using-streamlit/how-download-pandas-dataframe-csv
+
+@st.cache_data
+def convert_df(df):
+   """
+   Convert pandas dataframe to csv for download.
+   """
+   return df.to_csv(index=False).encode('utf-8')
+
+
+############## Model Performance For Validation File ##############
+def validation_model_performer(df:pd.DataFrame):
+     
+     pred = df['prediction'].copy()
+
+     # Load validation_target
+     validation_target = pd.read_csv(Path(__file__).parents[1] / "data/Validation_Set" / "validation_target.csv") 
+
+
+     #st.dataframe(validation_target) 
+     #st.dataframe(validation_target) 
+
+     # Evaluate Model Performance - Ground Truth (Kappa Coef)
+     st.write(f"The Cohen's kappa coef for the validation file is {cohen_kappa_score(validation_target, pred): .2f}.")
+
+     return ""

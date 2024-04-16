@@ -1,14 +1,16 @@
 import streamlit as st
 from backend import *
 
-#from pathlib import Path
+from pathlib import Path
 
 
+# set parent path of the script
+script_dir = Path(__file__).parents[1]
 
-st.title("Load Data")
+st.title("Cancer Diagnosis Predictor")
 
-st.write('Please select the pathalogical cancer report file (.csv)')
-st.write('See example data table below')
+st.write('Please select the pathalogical cancer report file for analysis')
+st.write('Only *.csv files in the correct format are allowed!')
 
 def main():
 
@@ -17,8 +19,7 @@ def main():
     
     ### Select File (*.csv)
     with st.container():
-        st.header("Select File (*.csv)")
-        df = load_data()
+        df, filename = load_data()
 
     
     if df is not None:
@@ -83,55 +84,89 @@ def main():
 
 
             options = st.multiselect(
-            'Combine up to 2 models!',
+            'Combine multiple models!',
             ['Logistic Regression', 'Random Forrest', 'AdaBoost(RF)', 'SVM'],
-            ['AdaBoost(RF)'],
-            max_selections=2)
+            ['AdaBoost(RF)'])
 
             st.text('Selected Models:')
+
             for ele in options:  
                 st.write(ele)
 
-            if len(options) > 1:
-                st.write("Set weights for multiple model deployment")
 
-                w1_value = st.slider("Weight Slider for w1", 0.0, 100.0, 50.0, step=0.1)
-                w2_value = update_w2_value(w1_value)
-
-                st.write("Weight for w1:", w1_value)
-                st.write("Weight for w2:", round(w2_value,1))
+            st.write("Model Performance")
 
             tab1, tab2, tab3, tab4 = st.tabs(["Accuracy", "Precision", "Sensitivity", "Kappa"])
 
-            st.write("Model Performance")
             with tab1:
                 st.header("Accuracy")
-                st.image("../resources/accuracy_scores.PNG", caption="Accuracy")
+                st.image(str(script_dir)+"/resources/accuracy_scores.PNG", caption="Accuracy")
 
             with tab2:
                 st.header("Precision")
-                st.image("../resources/precision_scores.PNG", caption="Precision")
+                st.image(str(script_dir)+"/resources/precision_scores.PNG", caption="Precision")
 
             with tab3:
                 st.header("Sensitivity")
-                st.image("../resources/sensitivity.PNG", caption="Recall")
+                st.image(str(script_dir)+"/resources/sensitivity.PNG", caption="Recall")
 
             with tab4:
                 st.header("Kappa")
-                st.image("../resources/accuracy_scores.PNG", caption="Kappa")
+                st.image(str(script_dir)+"/resources/accuracy_scores.PNG", caption="Kappa")
+  
+    
+        st.write("")
+        st.write("")
+        
+
+
+        ################## Run Prediction ##################
+
+        # Run Prediction:
+        with st.expander("Run Prediction"):
+            
+            
+            # Load Selected Models:
+            #st.write(ml_model_loader(options))
+            ml_list = ml_model_loader(options)
+            st.write(ml_list)
+
+            # Run Prediction
+            X_result, X_Pred, X_Pred_Diff = ml_predictor(X_input_reduced, ml_list)
+            
+            st.header("Result Table")
+            st.dataframe(X_result)    
+            
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.header("Prediction Table")
+                st.dataframe(X_Pred)
+
+            with col2:
+                st.header("Prediction Differences")
+                st.dataframe(X_Pred_Diff)
+        
+            ##Model Performance For Validation File
+            if filename == "validation_features.csv":
+                st.write(validation_model_performer(X_result))
+
+        ################## Download Resuls ##################
+
+        csv = convert_df(X_result)
+
+        st.download_button(
+            "Download Results",
+            csv,
+            "predictions.csv",
+            "text/csv",
+            key='download-csv'
+            )   
 
 
 
+        
 
 
-
-    # Model combination: c1(RF), c2(SVM) > w1 = c1/(c+1c2), w2 = c2/(c1+c2) y_pred = w1 * y_pred_RF + w2 * y_pred_SVM
-    ## e.g. c1=75% -> 0.75
-    ## Dispaly Performance of trainset on combination
-    ## Library in scipy
-
-    # Download Prediciton
-
-    # IF 
 if __name__ == '__main__':
     main()
