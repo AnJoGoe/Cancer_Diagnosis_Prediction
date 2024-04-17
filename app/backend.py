@@ -120,18 +120,28 @@ def ml_model_loader(model_list:list):
     """
 
     ml_list = []
+    
 
     mapping_dict = {"AdaBoost(RF)":"ada_class.pickle",
                'Logistic Regression':"log_reg.pickle", 
                'Random Forrest':"random_forest.pickle", 
                'SVM':"svm.pickle"}
 
-
+    """
     for key, value in mapping_dict.items():
         if key in model_list:
 
             # Load Model
             with open(Path(__file__).parents[1] / "machine_learning/models" / value, "rb") as file:
+                value = pickle.load(file)
+    
+                ml_list.append(value)
+    """
+
+    for key in model_list:
+        if key in mapping_dict:
+            # Load Model
+            with open(Path(__file__).parents[1] / "machine_learning/models" / mapping_dict[key], "rb") as file:
                 value = pickle.load(file)
     
                 ml_list.append(value)
@@ -142,8 +152,8 @@ def ml_model_loader(model_list:list):
 ############## Run Predictions ##############
 def ml_predictor(df:pd.DataFrame, ml_list:list):
     
-    if df is None:
-            return ""
+    if df is None or not ml_list:
+        return ""
     
     # Copy of test_set
     X_test = df.copy()
@@ -169,18 +179,26 @@ def ml_predictor(df:pd.DataFrame, ml_list:list):
 
     # Get most frequent values: value_counts
     value_counts_df = df_pred.apply(pd.value_counts, axis=1)
-    #st.write("value_counts_df", df_pred)
+    #st.write("value_counts_df", value_counts_df)
+    #st.dataframe(value_counts_df.duplicated(keep=False))
+    #st.write("idxmax", value_counts_df.idxmax(axis=1))
+    #st.write(df_pred.iloc[:,0])
+    
 
     # Get Mode: select first value_count in case of a tie
     mode_pred = value_counts_df.idxmax(axis=1)
-    mode_pred_first = mode_pred.mask(value_counts_df.duplicated(keep='first'), 
-                                     value_counts_df.idxmax(axis=1))
+    row_ties = value_counts_df.apply(lambda x: x.eq(x.max()), axis=1).sum(axis=1) > 1
+    #st.write("row ties", row_ties)
+    mode_pred_first = mode_pred.mask(row_ties, 
+                                     df_pred.iloc[:,0])
+    
+    
 
     #st.write("mode_pred",mode_pred)
-    #st.write("df_pred",df_pred)
+    #st.write("mode_pred_first",mode_pred_first)
    
 
-    X_test['prediction'] = mode_pred
+    X_test['prediction'] = mode_pred_first
     
 
 
@@ -211,6 +229,6 @@ def validation_model_performer(df:pd.DataFrame):
      #st.dataframe(validation_target) 
 
      # Evaluate Model Performance - Ground Truth (Kappa Coef)
-     st.write(f"The Cohen's kappa coef for the validation file is {cohen_kappa_score(validation_target, pred): .2f}.")
+     
 
-     return ""
+     return round(cohen_kappa_score(validation_target, pred), 4)
