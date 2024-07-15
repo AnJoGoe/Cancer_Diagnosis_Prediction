@@ -48,6 +48,7 @@ def validate_input(df:pd.DataFrame):
         return "Upload Data"
     
     df_val = pd.read_csv(Path(__file__).resolve().parent.parent / "data/support" / "df_vali.csv", usecols=lambda x: x not in ["ID","Diagnosis"]) # usecols: https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html
+    st.write("Resolved path:", Path(__file__).resolve().parent.parent / "data/support" / "df_vali.csv") # debugging
 
     # Sort columns alphabetically
     df_val_sorted = df_val.sort_index(axis=1)
