@@ -1,5 +1,5 @@
 import streamlit as st
-from backend import *
+from backend_lnx import *
 from pathlib import Path
 
 # set parent path of the script to the root directory of the project
