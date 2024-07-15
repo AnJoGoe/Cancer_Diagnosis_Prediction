@@ -57,12 +57,12 @@ def validate_input(df:pd.DataFrame):
     ## https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.testing.assert_frame_equal.html
     if df_sorted.columns.equals(df_val_sorted.columns) and all(df_sorted.dtypes == df_val_sorted.dtypes):
         return "Table validation passed!"
-    elif not (df_sorted.columns.equals(df_val_sorted.columns) and all(df_sorted.dtypes == df_val_sorted.dtypes)):
+    elif not (df_sorted.columns.equals(df_val_sorted.columns) and not (all(df_sorted.dtypes == df_val_sorted.dtypes))):
         return "Table validation not passed. Table contains different columns and dtypes"
     elif not (df_sorted.columns.equals(df_val_sorted.columns)):
         return "Table validation not passed. Table contains different columns"
     elif not (all(df_sorted.dtypes == df_val_sorted.dtypes)):
-        return "Table validation not passed. Table contains dtypes"
+        return "Table validation not passed. Table contains different dtypes"
 
 
 ############## Scale Data ##############
