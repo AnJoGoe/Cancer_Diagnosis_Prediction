@@ -77,7 +77,7 @@ def scale_data(df:pd.DataFrame):
     X_input = df.copy()
 
     # Load Scaler
-    with open(Path(__file__).resolve().parents[1] / "machine_learning/scalers/min_max_scaler.pickle", "rb") as file:
+    with open(Path(__file__).resolve().parent.parent / "machine_learning/scalers/min_max_scaler.pickle", "rb") as file:
         scaler = pickle.load(file)
     
     # Scaler Input Data
@@ -104,7 +104,7 @@ def drop_cols(df:pd.DataFrame):
             return ""
     df_filtered = df.copy()
 
-    col_list = pd.read_csv(Path(__file__).resolve().parents[1] / "data/Train_Set" / "X_train_reduced.csv", nrows=0).columns.tolist()
+    col_list = pd.read_csv(Path(__file__).resolve().parent.parent / "data/Train_Set" / "X_train_reduced.csv", nrows=0).columns.tolist()
     
     df_filtered = df_filtered.filter(items=col_list)
 
@@ -141,7 +141,7 @@ def ml_model_loader(model_list:list):
     for key in model_list:
         if key in mapping_dict:
             # Load Model
-            with open(Path(__file__).resolve().parents[1] / "machine_learning/models" / mapping_dict[key], "rb") as file:
+            with open(Path(__file__).resolve().parent.parent / "machine_learning/models" / mapping_dict[key], "rb") as file:
                 value = pickle.load(file)
     
                 ml_list.append(value)
@@ -222,7 +222,7 @@ def validation_model_performer(df:pd.DataFrame):
      pred = df['prediction'].copy()
 
      # Load validation_target
-     validation_target = pd.read_csv(Path(__file__).resolve().parents[1] / "data/Validation_Set" / "validation_target.csv") 
+     validation_target = pd.read_csv(Path(__file__).resolve().parent.parent / "data/Validation_Set" / "validation_target.csv") 
 
 
      #st.dataframe(validation_target) 
