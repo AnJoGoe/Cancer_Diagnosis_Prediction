@@ -49,6 +49,13 @@ def validate_input(df:pd.DataFrame):
     
     df_val = pd.read_csv(Path(__file__).resolve().parent.parent / "data/support" / "df_vali.csv", usecols=lambda x: x not in ["ID","Diagnosis"]) # usecols: https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html
     st.write("Resolved path:", Path(__file__).resolve().parent.parent / "data/support" / "df_vali.csv") # debugging
+    st.write("Columns of df:", df.columns)
+    st.write("Data types of df:", df.dtypes)
+
+    st.write("Columns of df_val:", df_val.columns)
+    st.write("Data types of df_val:", df_val.dtypes
+
+
 
     # Sort columns alphabetically
     df_val_sorted = df_val.sort_index(axis=1)
