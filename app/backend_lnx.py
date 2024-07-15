@@ -53,7 +53,7 @@ def validate_input(df:pd.DataFrame):
     st.write("Data types of df:", df.dtypes)
 
     st.write("Columns of df_val:", df_val.columns)
-    st.write("Data types of df_val:", df_val.dtypes
+    st.write("Data types of df_val:", df_val.dtypes)
 
 
 
