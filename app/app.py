@@ -125,19 +125,19 @@ def main():
 
             with tab1:
                 st.subheader("Accuracy", divider=True)
-                st.image(str(script_dir)+"/resources/accuracy_scores.PNG", caption="Accuracy")
+                st.image(str(script_dir)+"/resources/accuracy_scores.png", caption="Accuracy")
 
             with tab2:
                 st.subheader("Precision", divider=True)
-                st.image(str(script_dir)+"/resources/precision_scores.PNG", caption="Precision")
+                st.image(str(script_dir)+"/resources/precision_scores.png", caption="Precision")
 
             with tab3:
                 st.subheader("Sensitivity", divider=True)
-                st.image(str(script_dir)+"/resources/sensitivity.PNG", caption="Recall")
+                st.image(str(script_dir)+"/resources/sensitivity.png", caption="Recall")
 
             with tab4:
                 st.subheader("Kappa", divider=True)
-                st.image(str(script_dir)+"/resources/cohens_kappa.PNG", caption="Kappa")
+                st.image(str(script_dir)+"/resources/cohens_kappa.png", caption="Kappa")
   
     
         st.write("")
